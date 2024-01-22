@@ -1,7 +1,6 @@
 package com.example.todo.servlet;
 
 import com.example.todo.manager.ToDoManager;
-import com.example.todo.manager.UserManager;
 import com.example.todo.model.Status;
 import com.example.todo.model.ToDo;
 import com.example.todo.model.User;

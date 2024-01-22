@@ -16,6 +16,14 @@ window.onload = function () {
         );
     }
 
+    $(document).ready(function() {
+        $('.todo-item').on('click', '.fa-check-square-o', function() {
+            $(this).toggleClass('d-none');
+            $(this).toggleClass('m-0 p-0');
+        });
+    });
+
+
     var currentDate = formatDate(new Date());
 
     $(".due-date-button").datepicker({

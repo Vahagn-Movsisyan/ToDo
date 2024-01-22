@@ -24,6 +24,19 @@ public class RegisterServlet extends HttpServlet {
         String email = req.getParameter("email");
         String password = req.getParameter("password");
         String confirmPassword = req.getParameter("confirmPassword");
+        String username = req.getParameter("username");
+
+        if (password.length() < 8) {
+            req.getSession().setAttribute("msg", "Password should be at least 8 characters long");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
+
+        if (password.toLowerCase().contains(username.toLowerCase())) {
+            req.getSession().setAttribute("msg", "Password should not contain your username");
+            req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
+            return;
+        }
 
         if (userManager.getUserByEmail(email) != null) {
             req.getSession().setAttribute("msg", "Email is already existed");
@@ -33,7 +46,7 @@ public class RegisterServlet extends HttpServlet {
             req.getRequestDispatcher("/WEB-INF/register.jsp").forward(req, resp);
         } else {
             userManager.addUser(User.builder()
-                    .username(req.getParameter("username"))
+                    .username(username)
                     .email(email)
                     .password(password)
                     .build());

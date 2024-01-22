@@ -7,7 +7,7 @@ import com.example.todo.model.ToDo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.sql.Date;
 public class ToDoManager {
     private final Connection connection = DbConnectionProvider.getInstance().getConnection();
     private final UserManager userManager = new UserManager();
@@ -16,8 +16,8 @@ public class ToDoManager {
         String sql = "INSERT INTO todo(title, created_date, finish_date, user_id, status) VALUES (?,?,?,?,?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, toDo.getTitle());
-            preparedStatement.setDate(2, (Date) toDo.getCreatedDate());
-            preparedStatement.setDate(3, (Date) toDo.getFinishDate());
+            preparedStatement.setDate(2, new Date(toDo.getCreatedDate().getTime()));
+            preparedStatement.setDate(3, new Date(toDo.getFinishDate().getTime()));
             preparedStatement.setInt(4, toDo.getUser().getId());
             preparedStatement.setString(5, toDo.getStatus().toString());
             preparedStatement.executeUpdate();
@@ -30,7 +30,6 @@ public class ToDoManager {
             e.printStackTrace();
         }
     }
-
     public void deleteToDo(int id) {
         String sql = "DELETE FROM todo WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -43,17 +42,38 @@ public class ToDoManager {
 
 
     public void updateToDo(ToDo toDo) {
-        String sql = "UPDATE todo SET title = ?, created_date = ?, finish_date = ?, status = ? WHERE id = ?";
+        String sql = "UPDATE todo SET title = ?,  finish_date = ?, status = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, toDo.getTitle());
-            preparedStatement.setDate(2, (Date) toDo.getCreatedDate());
-            preparedStatement.setDate(3, (Date) toDo.getFinishDate());
-            preparedStatement.setString(4, toDo.getStatus().toString());
-            preparedStatement.setInt(5, toDo.getId());
+            preparedStatement.setDate(2, new Date(toDo.getFinishDate().getTime()));
+            preparedStatement.setString(3, toDo.getStatus().toString());
+            preparedStatement.setInt(4, toDo.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<ToDo> getToDoByUserSortedByDate(int userId) {
+        List<ToDo> toDos = new ArrayList<>();
+        String query = "SELECT * FROM todo WHERE user_id = '" + userId + "' ORDER BY finish_date";
+        try (Statement statement = connection.createStatement()) {
+            ResultSet resultSet = statement.executeQuery(query);
+            while (resultSet.next()) {
+                toDos.add(ToDo.builder()
+                        .id(resultSet.getInt("id"))
+                        .title(resultSet.getString("title"))
+                        .createdDate(resultSet.getDate("created_date"))
+                        .finishDate(resultSet.getDate("finish_date"))
+                        .user(userManager.getUserById(resultSet.getInt("user_id")))
+                        .status(Status.valueOf(resultSet.getString("status")))
+                        .build());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+        return toDos;
     }
 
     public List<ToDo> getToDoByUser(int userId) {

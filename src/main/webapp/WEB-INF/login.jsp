@@ -107,6 +107,8 @@
         </div>
     </div>
 </div>
+<script src="/js/examPassword.js"></script>
+<script src="/js/examEmail.js"></script>
 <script src="/js/login.js"></script>
 </body>
 </html>
